@@ -81,7 +81,7 @@ def preprocess_features(df: pd.DataFrame) -> pd.DataFrame:
     for col in FEATURE_COLUMNS:
         if df[col].isna().any():
             median_val = df[col].median()
-            df[col].fillna(median_val, inplace=True)
+            df[col] = df[col].fillna(median_val)
             logger.debug(f"Imputed '{col}' with median={median_val:.2f}.")
 
     logger.info(f"Preprocessed dataset: {len(df)} rows retained.")
