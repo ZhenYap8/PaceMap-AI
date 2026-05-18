@@ -43,3 +43,5 @@ data/
 # Temporary files
 tmp/
 temp/
+
+old_models/
