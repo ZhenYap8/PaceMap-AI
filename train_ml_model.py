@@ -28,7 +28,8 @@ from sklearn.model_selection import train_test_split
 from data_loader import load_all_runs
 from ml_model import (
     evaluate_model, predict, TARGET_COLUMN, SUPPORTED_MODELS,
-    preprocess_features, engineer_features, FEATURE_COLUMNS, build_model
+    preprocess_features, engineer_features, FEATURE_COLUMNS, build_model,
+    clean_runs_for_learning,
 )
 from utils import format_duration
 
@@ -57,6 +58,21 @@ def train_models(gpx_dir: str, output_dir: str = "models", smoothing_window: int
     print(f"\n{'='*80}")
     print(f"✓ Successfully loaded {len(all_runs_df)} runs")
     print(f"{'='*80}\n")
+
+    all_runs_df, outlier_report = clean_runs_for_learning(all_runs_df, id_column="run_id")
+    if outlier_report["removed_count"]:
+        print(f"🧹 Pace/time cleaning (3σ rule, σ={outlier_report['sigma']}):")
+        print(f"   Ignored {outlier_report['removed_count']} of {outlier_report['total_before']} runs "
+              f"({outlier_report['removed_pct']}%)")
+        for stage in outlier_report.get("stages", []):
+            if stage.get("removed_count"):
+                print(f"   [{stage['stage']}] {stage.get('description', '')}")
+                for o in stage.get("ignored_runs", []):
+                    detail = f"{o.get('avg_pace', '')} / {o.get('finish_time', '')}".strip(" /")
+                    print(f"     - {o.get('run_id', '?')} ({detail}): {', '.join(o['reasons'])}")
+        print()
+    elif outlier_report.get("skipped"):
+        print(f"ℹ️  Pace/time cleaning skipped: {outlier_report.get('skip_reason')}\n")
     
     print("Dataset preview:")
     print(all_runs_df[['run_id', 'distance_km', 'elevation_gain_m', 'finish_time_s']].head(10))

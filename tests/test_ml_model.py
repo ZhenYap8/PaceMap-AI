@@ -24,9 +24,13 @@ from ml_model import (
     train_model,
     evaluate_model,
     predict,
+    remove_outliers_three_sigma,
+    filter_invalid_pace_time_runs,
+    clean_runs_for_learning,
     FEATURE_COLUMNS,
     TARGET_COLUMN,
-    SUPPORTED_MODELS
+    SUPPORTED_MODELS,
+    DEFAULT_SIGMA,
 )
 
 
@@ -46,6 +50,86 @@ def sample_data():
         'fatigue_score': rng.uniform(0, 10, n),
         'finish_time_s': rng.uniform(1200, 10800, n),
     })
+
+
+class TestRemoveOutliersThreeSigma:
+    """Test Three Sigma outlier removal"""
+
+    def test_no_outliers_retained(self, sample_data):
+        """Normal data should retain all rows"""
+        cleaned, report = remove_outliers_three_sigma(sample_data.assign(run_id=range(len(sample_data))))
+        assert len(cleaned) == len(sample_data)
+        assert report["removed_count"] == 0
+
+    def test_extreme_outlier_removed(self, sample_data):
+        """Obvious outlier beyond 3σ should be removed"""
+        data = sample_data.copy()
+        data["run_id"] = [f"run_{i}" for i in range(len(data))]
+        # Inject extreme pace outlier
+        data.loc[0, "avg_pace_s_per_km"] = data["avg_pace_s_per_km"].mean() + 10 * data["avg_pace_s_per_km"].std()
+
+        cleaned, report = remove_outliers_three_sigma(data)
+
+        assert report["removed_count"] >= 1
+        assert 0 not in cleaned.index
+        assert report["outliers"][0]["run_id"] == "run_0"
+
+    def test_skipped_for_small_dataset(self):
+        """Should skip outlier removal when too few samples"""
+        small = pd.DataFrame({
+            "run_id": ["a", "b", "c"],
+            "distance_km": [5, 10, 1000],
+            "elevation_gain_m": [10, 20, 30],
+            "avg_pace_s_per_km": [300, 310, 320],
+            "finish_time_s": [1500, 3000, 4500],
+        })
+        cleaned, report = remove_outliers_three_sigma(small)
+        assert report["skipped"] is True
+        assert len(cleaned) == 3
+
+    def test_sigma_threshold(self, sample_data):
+        """Report should record the sigma used"""
+        _, report = remove_outliers_three_sigma(sample_data.assign(run_id=range(len(sample_data))))
+        assert report["sigma"] == DEFAULT_SIGMA
+        assert report["method"] == "three_sigma"
+
+
+class TestPaceTimeCleaning:
+    """Test pace/time focused cleaning pipeline"""
+
+    def test_invalid_fast_pace_removed(self):
+        data = pd.DataFrame({
+            "run_id": ["good", "bad"],
+            "distance_km": [10.0, 10.0],
+            "elevation_gain_m": [50, 50],
+            "avg_pace_s_per_km": [360.0, 60.0],  # 1:00/km impossible
+            "finish_time_s": [3600.0, 600.0],
+        })
+        cleaned, report = filter_invalid_pace_time_runs(data)
+        assert len(cleaned) == 1
+        assert cleaned.iloc[0]["run_id"] == "good"
+        assert report["removed_count"] == 1
+
+    def test_pace_time_mismatch_removed(self):
+        data = pd.DataFrame({
+            "run_id": ["glitch"],
+            "distance_km": [10.0],
+            "elevation_gain_m": [50],
+            "avg_pace_s_per_km": [360.0],   # 6:00/km
+            "finish_time_s": [36000.0],    # 10 hours — implied 60:00/km
+        })
+        cleaned, report = filter_invalid_pace_time_runs(data)
+        assert len(cleaned) == 0
+        assert report["removed_count"] == 1
+
+    def test_clean_pipeline_removes_sigma_outlier(self, sample_data):
+        data = sample_data.assign(run_id=[f"run_{i}" for i in range(len(sample_data))])
+        data.loc[0, "avg_pace_s_per_km"] = data["avg_pace_s_per_km"].mean() + 10 * data["avg_pace_s_per_km"].std()
+
+        cleaned, report = clean_runs_for_learning(data)
+        assert report["removed_count"] >= 1
+        assert "stages" in report
+        assert len(cleaned) < len(data)
 
 
 class TestPreprocessFeatures:

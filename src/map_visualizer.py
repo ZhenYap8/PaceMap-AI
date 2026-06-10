@@ -18,6 +18,7 @@ logger = logging.getLogger(__name__)
 # Pace thresholds in seconds/km used for colour scaling
 PACE_SLOW_THRESHOLD = 420.0   # 7:00 /km  → blue
 PACE_FAST_THRESHOLD = 240.0   # 4:00 /km  → red
+MAX_PACE_SEGMENTS = 600       # downsample pace overlay above this
 
 
 def pace_to_colour(
@@ -95,6 +96,77 @@ def create_base_map(
         zoom_start=zoom_start,
         tiles="OpenStreetMap",
     )
+
+
+def downsample_route(
+    coordinates: List[tuple[float, float]],
+    paces: List[float],
+    max_segments: int = MAX_PACE_SEGMENTS,
+) -> tuple[List[tuple[float, float]], List[float]]:
+    """
+    Downsample a route for pace-coloured overlay while preserving endpoints.
+
+    The full GPS trace is drawn separately; this only thins pace segments.
+    """
+    if len(paces) <= max_segments:
+        return coordinates, paces
+
+    indices = sorted({
+        int(i * len(paces) / max_segments) for i in range(max_segments)
+    } | {len(paces) - 1})
+
+    new_coords = [coordinates[0]]
+    new_paces = []
+    for idx in indices:
+        new_paces.append(paces[idx])
+        new_coords.append(coordinates[idx + 1])
+
+    return new_coords, new_paces
+
+
+def add_full_route_trace(
+    fmap: folium.Map,
+    coordinates: List[tuple[float, float]],
+    color: str = "#1e40af",
+    weight: int = 5,
+    opacity: float = 0.9,
+) -> folium.Map:
+    """Draw the complete GPS track as a single continuous polyline."""
+    if len(coordinates) < 2:
+        return fmap
+
+    folium.PolyLine(
+        locations=[[lat, lon] for lat, lon in coordinates],
+        color=color,
+        weight=weight,
+        opacity=opacity,
+        tooltip=folium.Tooltip("Full GPS track"),
+    ).add_to(fmap)
+
+    logger.info(f"Drew full route trace with {len(coordinates)} points.")
+    return fmap
+
+
+def fit_map_to_route(
+    fmap: folium.Map,
+    coordinates: List[tuple[float, float]],
+    user_location: Optional[tuple[float, float]] = None,
+    padding: tuple[int, int] = (40, 40),
+) -> folium.Map:
+    """Zoom the map to fit the entire route (and optional user location)."""
+    if not coordinates:
+        return fmap
+
+    lats = [c[0] for c in coordinates]
+    lons = [c[1] for c in coordinates]
+
+    if user_location:
+        lats.append(user_location[0])
+        lons.append(user_location[1])
+
+    bounds = [[min(lats), min(lons)], [max(lats), max(lons)]]
+    fmap.fit_bounds(bounds, padding=padding)
+    return fmap
 
 
 def render_pace_route(
@@ -185,25 +257,45 @@ def build_activity_map(
     paces: List[float],
     activity_name: str = "Run",
     zoom_start: int = 14,
+    user_location: Optional[tuple[float, float]] = None,
+    fit_route: bool = True,
 ) -> folium.Map:
     """
     Build a complete pace-coloured activity map.
 
-    Convenience wrapper that creates the base map, renders the route,
-    and adds start/end markers.
+    Draws the full GPS track first, then overlays pace-coloured segments,
+    and auto-fits the viewport to the route shape.
 
     Args:
         coordinates: List of (latitude, longitude) tuples.
         paces: Pace values (s/km) per segment.
         activity_name: Display name for the activity.
-        zoom_start: Initial zoom level.
+        zoom_start: Initial zoom level (used before fit_bounds).
+        user_location: Optional (lat, lon) to mark the user's position.
+        fit_route: Whether to auto-zoom to the full route.
 
     Returns:
         A fully rendered Folium Map.
     """
     fmap = create_base_map(coordinates, zoom_start=zoom_start)
-    fmap = render_pace_route(fmap, coordinates, paces, activity_name)
+    fmap = add_full_route_trace(fmap, coordinates)
+
+    display_coords, display_paces = downsample_route(coordinates, paces)
+    if len(display_paces) == len(display_coords) - 1:
+        fmap = render_pace_route(fmap, display_coords, display_paces, activity_name)
+
     fmap = add_start_end_markers(fmap, coordinates, activity_name)
+
+    if user_location:
+        folium.Marker(
+            location=list(user_location),
+            popup="Your location",
+            icon=folium.Icon(color="blue", icon="info-sign"),
+        ).add_to(fmap)
+
+    if fit_route:
+        fmap = fit_map_to_route(fmap, coordinates, user_location=user_location)
+
     return fmap
 
 

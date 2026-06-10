@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PaceMap AI</title>
+  <link rel="stylesheet" href="/static/css/style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <header class="header">
+    <div class="header-inner">
+      <div class="logo">
+        <span class="logo-icon">🏃</span>
+        <div>
+          <h1>PaceMap AI</h1>
+          <p>Running performance analysis &amp; route recommendation</p>
+        </div>
+      </div>
+      <div class="status-badge" id="status-badge">
+        <span class="status-dot"></span>
+        <span id="status-text">Connecting...</span>
+      </div>
+    </div>
+  </header>
+
+  <nav class="tabs">
+    <button class="tab active" data-tab="analyze">Analyze Run</button>
+    <button class="tab" data-tab="recommend">Route Recommendation</button>
+  </nav>
+
+  <main class="main">
+    <!-- ========== TAB 1: Analyze Single Run ========== -->
+    <div class="tab-panel active" id="panel-analyze">
+      <section class="upload-section" id="upload-section">
+        <div class="upload-card">
+          <div class="upload-zone" id="upload-zone">
+            <div class="upload-icon">📂</div>
+            <h2>Upload your GPX file</h2>
+            <p>Drop a .gpx file here or click to browse</p>
+            <input type="file" id="file-input" accept=".gpx" hidden>
+            <button type="button" class="btn btn-primary" id="browse-btn">Choose File</button>
+          </div>
+          <div class="upload-options">
+            <label for="smoothing">
+              GPS smoothing
+              <span class="option-hint">Reduces GPS noise (1–10)</span>
+            </label>
+            <input type="range" id="smoothing" min="1" max="10" value="3">
+            <span class="smoothing-value" id="smoothing-value">3</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="loading-section hidden" id="loading-section">
+        <div class="spinner"></div>
+        <p>Analyzing your run...</p>
+      </section>
+
+      <section class="error-section hidden" id="error-section">
+        <div class="error-card">
+          <span class="error-icon">⚠️</span>
+          <p id="error-message"></p>
+          <button type="button" class="btn btn-secondary" id="retry-btn">Try Again</button>
+        </div>
+      </section>
+
+      <section class="results-section hidden" id="results-section">
+        <div class="results-header">
+          <h2 id="run-title">Run Analysis</h2>
+          <button type="button" class="btn btn-secondary" id="new-run-btn">Analyze Another Run</button>
+        </div>
+        <div class="stats-grid" id="stats-grid"></div>
+        <div class="visualizations">
+          <div class="viz-card">
+            <h3>Pace Over Distance</h3>
+            <img id="pace-chart" alt="Pace chart" class="pace-chart">
+          </div>
+          <div class="viz-card viz-card-map">
+            <h3>Interactive Pace Map</h3>
+            <div class="map-legend">
+              <span class="legend-item"><span class="legend-color fast"></span> Fast</span>
+              <span class="legend-item"><span class="legend-color moderate"></span> Moderate</span>
+              <span class="legend-item"><span class="legend-color slow"></span> Slow</span>
+            </div>
+            <iframe id="pace-map" title="Pace map" class="pace-map"></iframe>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <!-- ========== TAB 2: Route Recommendation ========== -->
+    <div class="tab-panel" id="panel-recommend">
+      <div class="workflow-steps">
+        <div class="step">
+          <span class="step-num">1</span>
+          <span>Upload all your runs</span>
+        </div>
+        <div class="step-arrow">→</div>
+        <div class="step">
+          <span class="step-num">2</span>
+          <span>Learn your patterns</span>
+        </div>
+        <div class="step-arrow">→</div>
+        <div class="step">
+          <span class="step-num">3</span>
+          <span>Generate a new route</span>
+        </div>
+      </div>
+
+      <!-- Step 1 & 2: Upload + Learn -->
+      <section class="upload-card" id="rec-upload-section">
+        <h2>Your Run Library</h2>
+        <p class="section-desc">Upload your past GPX files so PaceMap can learn your pace, elevation, and fitness. Runs with bad pace or finish times are automatically cleaned and ignored before training.</p>
+
+        <div class="upload-zone" id="rec-upload-zone">
+          <div class="upload-icon">📁</div>
+          <p>Drop multiple .gpx files here or click to browse</p>
+          <input type="file" id="rec-file-input" accept=".gpx" multiple hidden>
+          <button type="button" class="btn btn-primary" id="rec-browse-btn">Choose Files</button>
+        </div>
+
+        <div class="library-status" id="library-status">
+          <span id="library-count">0 runs in library</span>
+          <button type="button" class="btn btn-secondary btn-small" id="reset-library-btn">Reset Library</button>
+        </div>
+
+        <button type="button" class="btn btn-primary btn-wide" id="learn-btn" disabled>
+          Learn My Runs
+        </button>
+      </section>
+
+      <section class="loading-section hidden" id="rec-loading-section">
+        <div class="spinner"></div>
+        <p id="rec-loading-text">Learning from your runs...</p>
+      </section>
+
+      <section class="profile-section hidden" id="profile-section">
+        <h2>Your Runner Profile</h2>
+        <div class="stats-grid" id="profile-stats"></div>
+        <div class="runs-list" id="runs-list"></div>
+      </section>
+
+      <!-- Step 3: Request Recommendation -->
+      <section class="recommend-form hidden" id="recommend-form">
+        <h2>Generate a New Route</h2>
+        <p class="section-desc">Enter where you want to start and your target distance. We'll create a brand-new loop or out-and-back route on nearby footpaths, tailored to your fitness profile.</p>
+
+        <div class="form-grid">
+          <div class="form-group">
+            <label for="location-input">Location</label>
+            <input type="text" id="location-input" placeholder="e.g. Hyde Park, London">
+            <button type="button" class="btn btn-secondary btn-small" id="geocode-btn">Find Location</button>
+            <span class="form-hint" id="geocode-result"></span>
+          </div>
+          <div class="form-group">
+            <label for="distance-input">Target Distance (km)</label>
+            <input type="number" id="distance-input" min="1" max="200" step="0.5" value="10" placeholder="10">
+          </div>
+        </div>
+
+        <button type="button" class="btn btn-primary btn-wide" id="recommend-btn">
+          Generate New Route
+        </button>
+      </section>
+
+      <section class="error-section hidden" id="rec-error-section">
+        <div class="error-card">
+          <span class="error-icon">⚠️</span>
+          <p id="rec-error-message"></p>
+        </div>
+      </section>
+
+      <section class="recommend-results hidden" id="recommend-results">
+        <div class="results-header">
+          <h2 id="rec-title">Your New Route</h2>
+          <span class="match-score" id="match-score"></span>
+        </div>
+
+        <div class="reasoning-card" id="reasoning-card"></div>
+        <div class="stats-grid" id="rec-stats-grid"></div>
+
+        <div class="visualizations visualizations-single">
+          <div class="viz-card viz-card-map viz-card-full">
+            <h3>Generated Route Map</h3>
+            <div class="map-legend">
+              <span class="legend-item"><span class="legend-color fast"></span> Fast</span>
+              <span class="legend-item"><span class="legend-color moderate"></span> Moderate</span>
+              <span class="legend-item"><span class="legend-color slow"></span> Slow</span>
+            </div>
+            <iframe id="rec-pace-map" title="Recommended route map" class="pace-map"></iframe>
+          </div>
+        </div>
+
+        <div class="alternatives-section hidden" id="alternatives-section">
+          <h3>Routes — click to preview</h3>
+          <p class="section-desc">Select any route below to view it on the map.</p>
+          <div class="alternatives-list" id="alternatives-list"></div>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <footer class="footer">
+    <p>PaceMap AI — Analyze runs, learn your patterns, and get ML-powered route recommendations</p>
+  </footer>
+
+  <script src="/static/js/app.js"></script>
+</body>
+</html>
