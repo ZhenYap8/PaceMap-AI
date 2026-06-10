@@ -171,7 +171,7 @@ async function analyzeFile(file) {
       body: formData,
     });
     const data = await res.json();
-    if (!res.ok) throw new Error(data.detail || "Analysis failed");
+    if (!res.ok) throw new Error(data.detail || "Analysis failed.");
     renderAnalyzeResults(data);
   } catch (err) {
     errorMessage.textContent = err.message || "Something went wrong.";

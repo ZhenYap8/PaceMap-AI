@@ -6,7 +6,7 @@
 [![Python](https://img.shields.io/badge/python-3.10%2B-blue)](https://www.python.org/)
 [![License](https://img.shields.io/badge/license-MIT-green)](./LICENSE)
 
-PaceMap AI analyzes your running data from GPX files to visualize pace variations, predict finish times, and provide insights into your training patterns using machine learning.
+PaceMap AI analyses your running data from GPX files to visualise pace variations, predict finish times, and provide insights into your training patterns using machine learning.
 
 ![PaceMap AI Demo](https://via.placeholder.com/800x400/4A90E2/FFFFFF?text=PaceMap+AI+Demo)
 
@@ -18,10 +18,10 @@ PaceMap AI analyzes your running data from GPX files to visualize pace variation
 - **Finish Time Prediction**: Predict race finish times based on distance, elevation, weather, and fatigue
 - **3 ML Models**: Linear Regression, Random Forest, and Gradient Boosting
 - **Feature Engineering**: Automatically creates advanced features like pace_per_elevation and distance_x_fatigue
-- **Model Evaluation**: MAE, RMSE, and R² metrics with visualization
+- **Model Evaluation**: MAE, RMSE, and R² metrics with visualisation
 
 ### 🗺️ **Interactive Pace Maps**
-- **Color-Coded Routes**: Visualize pace variations with intuitive color gradients
+- **Colour-Coded Routes**: Visualise pace variations with intuitive colour gradients
   - 🔴 Red = Fast pace (< 4:00/km)
   - 🟢 Green = Moderate pace (5:30/km)
   - 🔵 Blue = Slow pace (> 7:00/km)
@@ -36,7 +36,7 @@ PaceMap AI analyzes your running data from GPX files to visualize pace variation
 
 ### �� **Data Processing**
 - **GPX File Support**: Standard GPS exchange format
-- **Batch Processing**: Analyze multiple runs at once
+- **Batch Processing**: Analyse multiple runs at once
 - **Data Validation**: Automatic handling of corrupted/incomplete files
 - **CSV Export**: Export processed data for further analysis
 
@@ -70,7 +70,7 @@ PaceMap AI analyzes your running data from GPX files to visualize pace variation
 
 ### Usage
 
-#### 1️⃣ **Analyze a Single Run**
+#### 1️⃣ **Analyse a Single Run**
 
 ```bash
 python analyze_single_run.py data/raw_gpx/run_1.gpx
@@ -83,7 +83,7 @@ This will generate:
 
 **Example output:**
 ```
-🏃 ANALYZING RUN: run_1.gpx
+🏃 ANALYSING RUN: run_1.gpx
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 📊 RUN STATISTICS
@@ -122,13 +122,13 @@ Model: Gradient Boosting
 ✅ Best model saved: models/best_model_gradient_boosting_20260518.pkl
 ```
 
-#### 3️⃣ **Visualize Model Performance**
+#### 3️⃣ **Visualise Model Performance**
 
 ```bash
 python visualize_model.py
 ```
 
-Generates diagnostic visualizations:
+Generates diagnostic visualisations:
 - `models/loss_curve.png` - Training/validation loss over iterations
 - `models/feature_importance.png` - Which features matter most
 - `models/scatter_validation.png` - Predicted vs actual times (validation)
@@ -172,7 +172,7 @@ PaceMap-AI/
 │
 ├── models/                    # Trained ML models
 │   ├── best_model_*.pkl
-│   └── *.png                  # Visualization outputs
+│   └── *.png                  # Visualisation outputs
 │
 └── output/                    # Generated maps and charts
     ├── *_pace_map.html
@@ -203,7 +203,7 @@ pytest tests/test_parser.py -v              # GPX parsing (16 tests)
 pytest tests/test_ml_model.py -v            # ML models (27 tests)
 pytest tests/test_utils.py -v               # Utilities (50 tests)
 pytest tests/test_pace_calculator.py -v     # Calculations (47 tests)
-pytest tests/test_map_visualizer.py -v      # Visualization (33 tests)
+pytest tests/test_map_visualizer.py -v      # Visualisation (33 tests)
 pytest tests/test_data_loader.py -v         # Data loading (23 tests)
 ```
 
@@ -230,7 +230,7 @@ The scatter test plot shows how well the ML model predicts finish times on unsee
 - **Points near the diagonal line** = Accurate predictions ✅
 - **Points above the line** = Model overestimated (predicted slower than actual)
 - **Points below the line** = Model underestimated (predicted faster than actual)
-- **Color intensity** = Prediction error magnitude
+- **Colour intensity** = Prediction error magnitude
   - Green = Low error (good prediction)
   - Yellow = Moderate error
   - Red = High error (poor prediction)
@@ -332,13 +332,13 @@ Input your target race distance and typical training conditions to get a predict
 Identify pace trends, elevation impact, and improvement over time across multiple training runs.
 
 ### 3. **Route Planning**
-Visualize and compare different running routes to understand pace variations on terrain.
+Visualise and compare different running routes to understand pace variations on terrain.
 
 ### 4. **Performance Tracking**
 Monitor how environmental factors (temperature, elevation, fatigue) affect your performance.
 
 ### 5. **Pacing Strategy**
-Analyze historical data to develop optimal pacing strategies for races.
+Analyse historical data to develop optimal pacing strategies for races.
 
 ---
 
@@ -505,7 +505,7 @@ This project is licensed under the MIT License - see the [LICENSE](./LICENSE) fi
 - [x] Interactive pace maps
 - [x] Comprehensive test suite (195 tests)
 - [x] Batch processing
-- [x] Model visualization
+- [x] Model visualisation
 
 ---
 

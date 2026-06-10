@@ -34,37 +34,37 @@ from map_visualizer import (
 class TestPaceToColour:
     """Test pace to color conversion"""
     
-    def test_fast_pace_red(self):
-        """Fast pace should return red"""
+    def test_fast_pace_strava_orange(self):
+        """Fast pace should return Strava orange"""
         # 4:00/km = 240s/km (fast threshold)
         color = pace_to_colour(240.0)
-        assert color == "#FF0000"  # Pure red
+        assert color == "#FC4C02"
     
-    def test_slow_pace_blue(self):
-        """Slow pace should return blue"""
+    def test_slow_pace_light_orange(self):
+        """Slow pace should return light orange"""
         # 7:00/km = 420s/km (slow threshold)
         color = pace_to_colour(420.0)
-        assert color == "#0000FF"  # Pure blue
+        assert color == "#FFC299"
     
-    def test_moderate_pace_green(self):
-        """Moderate pace should return green"""
+    def test_moderate_pace_mid_orange(self):
+        """Moderate pace should return mid orange"""
         # 5:30/km = 330s/km (middle)
         color = pace_to_colour(330.0)
-        assert color == "#00FF00"  # Pure green
+        assert color == "#FF8C55"
     
     def test_very_fast_pace(self):
-        """Very fast pace (elite) should be red"""
+        """Very fast pace (elite) should stay in orange family"""
         # 3:00/km = 180s/km
         color = pace_to_colour(180.0)
         assert color.startswith("#")
-        assert "FF" in color[:3]  # Should have high red component
+        assert color == "#FC4C02"
     
     def test_very_slow_pace(self):
-        """Very slow pace should be blue"""
+        """Very slow pace should stay in orange family"""
         # 10:00/km = 600s/km
         color = pace_to_colour(600.0)
         assert color.startswith("#")
-        assert "FF" in color[-2:]  # Should have high blue component
+        assert color == "#FFC299"
     
     def test_zero_pace_grey(self):
         """Zero pace should return grey"""

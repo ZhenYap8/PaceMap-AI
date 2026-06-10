@@ -15,9 +15,11 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-# Pace thresholds in seconds/km used for colour scaling
-PACE_SLOW_THRESHOLD = 420.0   # 7:00 /km  → blue
-PACE_FAST_THRESHOLD = 240.0   # 4:00 /km  → red
+# Pace thresholds in seconds/km used for colour scaling (Strava orange palette)
+PACE_SLOW_THRESHOLD = 420.0   # 7:00 /km  → light orange
+PACE_FAST_THRESHOLD = 240.0   # 4:00 /km  → Strava orange
+STRAVA_ORANGE = "#FC4C02"
+STRAVA_ORANGE_LIGHT = "#FFC299"
 MAX_PACE_SEGMENTS = 600       # downsample pace overlay above this
 
 
@@ -29,10 +31,10 @@ def pace_to_colour(
     """
     Map a pace value to a hex colour string.
 
-    Colour scale:
-        Blue  → slower pace  (>= slow_threshold)
-        Green → moderate pace
-        Red   → faster pace  (<= fast_threshold)
+    Colour scale (Strava-inspired orange gradient):
+        Light orange → slower pace  (>= slow_threshold)
+        Mid orange   → moderate pace
+        Strava orange → faster pace  (<= fast_threshold)
 
     Args:
         pace_seconds_per_km: Pace in seconds per kilometre.
@@ -51,19 +53,21 @@ def pace_to_colour(
     )
     ratio = max(0.0, min(1.0, ratio))
 
-    # Interpolate: fast (red) → moderate (green) → slow (blue)
+    # Interpolate: fast (#FC4C02) → mid (#FF8C55) → slow (#FFC299)
+    fast_rgb = (252, 76, 2)
+    mid_rgb = (255, 140, 85)
+    slow_rgb = (255, 194, 153)
+
     if ratio < 0.5:
-        # Red → Green
         t = ratio / 0.5
-        r = int(255 * (1 - t))
-        g = int(255 * t)
-        b = 0
+        r = int(fast_rgb[0] + (mid_rgb[0] - fast_rgb[0]) * t)
+        g = int(fast_rgb[1] + (mid_rgb[1] - fast_rgb[1]) * t)
+        b = int(fast_rgb[2] + (mid_rgb[2] - fast_rgb[2]) * t)
     else:
-        # Green → Blue
         t = (ratio - 0.5) / 0.5
-        r = 0
-        g = int(255 * (1 - t))
-        b = int(255 * t)
+        r = int(mid_rgb[0] + (slow_rgb[0] - mid_rgb[0]) * t)
+        g = int(mid_rgb[1] + (slow_rgb[1] - mid_rgb[1]) * t)
+        b = int(mid_rgb[2] + (slow_rgb[2] - mid_rgb[2]) * t)
 
     return f"#{r:02X}{g:02X}{b:02X}"
 
@@ -127,7 +131,7 @@ def downsample_route(
 def add_full_route_trace(
     fmap: folium.Map,
     coordinates: List[tuple[float, float]],
-    color: str = "#1e40af",
+    color: str = STRAVA_ORANGE,
     weight: int = 5,
     opacity: float = 0.9,
 ) -> folium.Map:
@@ -290,7 +294,7 @@ def build_activity_map(
         folium.Marker(
             location=list(user_location),
             popup="Your location",
-            icon=folium.Icon(color="blue", icon="info-sign"),
+            icon=folium.Icon(color="orange", icon="info-sign"),
         ).add_to(fmap)
 
     if fit_route:

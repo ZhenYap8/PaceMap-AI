@@ -240,7 +240,7 @@ def predict_new_run(model_path: str, distance_km: float, elevation_gain_m: float
     Args:
         model_path: Path to saved model file (.pkl)
         distance_km: Planned distance in km
-        elevation_gain_m: Expected elevation gain in meters
+        elevation_gain_m: Expected elevation gain in metres
         avg_pace_s_per_km: Target pace in seconds per km
     """
     # Load model
@@ -333,7 +333,7 @@ Examples:
     parser.add_argument(
         '--elevation',
         type=float,
-        help='Elevation gain in meters for prediction'
+        help='Elevation gain in metres for prediction'
     )
     
     parser.add_argument(

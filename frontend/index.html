@@ -1,22 +1,24 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en-GB">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>PaceMap AI</title>
   <link rel="stylesheet" href="/static/css/style.css">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
   <header class="header">
     <div class="header-inner">
       <div class="logo">
-        <span class="logo-icon">🏃</span>
+        <span class="logo-icon" aria-hidden="true">
+          <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect width="40" height="40" rx="6" fill="#FC4C02"/>
+            <path d="M12 28L22 10L26 10L20 22H28L18 28H12Z" fill="white"/>
+          </svg>
+        </span>
         <div>
-          <h1>PaceMap AI</h1>
-          <p>Running performance analysis &amp; route recommendation</p>
+          <h1><span>Pace</span>Map AI</h1>
+          <p>Analyse runs · Learn your fitness · Discover new routes</p>
         </div>
       </div>
       <div class="status-badge" id="status-badge">
@@ -27,12 +29,12 @@
   </header>
 
   <nav class="tabs">
-    <button class="tab active" data-tab="analyze">Analyze Run</button>
+    <button class="tab active" data-tab="analyze">Analyse Run</button>
     <button class="tab" data-tab="recommend">Route Recommendation</button>
   </nav>
 
   <main class="main">
-    <!-- ========== TAB 1: Analyze Single Run ========== -->
+    <!-- ========== TAB 1: Analyse Single Run ========== -->
     <div class="tab-panel active" id="panel-analyze">
       <section class="upload-section" id="upload-section">
         <div class="upload-card">
@@ -56,7 +58,7 @@
 
       <section class="loading-section hidden" id="loading-section">
         <div class="spinner"></div>
-        <p>Analyzing your run...</p>
+        <p>Analysing your run...</p>
       </section>
 
       <section class="error-section hidden" id="error-section">
@@ -70,7 +72,7 @@
       <section class="results-section hidden" id="results-section">
         <div class="results-header">
           <h2 id="run-title">Run Analysis</h2>
-          <button type="button" class="btn btn-secondary" id="new-run-btn">Analyze Another Run</button>
+          <button type="button" class="btn btn-secondary" id="new-run-btn">Analyse Another Run</button>
         </div>
         <div class="stats-grid" id="stats-grid"></div>
         <div class="visualizations">
@@ -204,7 +206,7 @@
   </main>
 
   <footer class="footer">
-    <p>PaceMap AI — Analyze runs, learn your patterns, and get ML-powered route recommendations</p>
+    <p><strong>PaceMap AI</strong> — Powered by your data. Built for runners.</p>
   </footer>
 
   <script src="/static/js/app.js"></script>

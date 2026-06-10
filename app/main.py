@@ -95,7 +95,7 @@ async def analyze_gpx(
     except FileNotFoundError:
         raise HTTPException(status_code=404, detail="GPX file not found")
     except Exception as exc:
-        raise HTTPException(status_code=422, detail=f"Failed to analyze GPX: {exc}")
+        raise HTTPException(status_code=422, detail=f"Failed to analyse GPX: {exc}")
     finally:
         if upload_path.exists():
             upload_path.unlink()

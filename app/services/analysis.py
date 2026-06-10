@@ -48,7 +48,7 @@ def analyze_run(
     skip_chart: bool = False,
 ) -> dict[str, Any]:
     """
-    Analyze a GPX run and generate visualizations.
+    Analyse a GPX run and generate visualisations.
 
     Returns structured stats plus URLs to generated assets.
     """
@@ -140,11 +140,12 @@ def _generate_pace_chart(
     x_vals, y_vals = zip(*filtered) if filtered else ([], [])
 
     fig, ax = plt.subplots(figsize=(14, 5))
-    ax.plot(x_vals, y_vals, linewidth=1.5, color="steelblue", alpha=0.8, label="Pace")
-    ax.fill_between(x_vals, y_vals, alpha=0.2, color="steelblue")
+    strava_orange = "#FC4C02"
+    ax.plot(x_vals, y_vals, linewidth=1.5, color=strava_orange, alpha=0.85, label="Pace")
+    ax.fill_between(x_vals, y_vals, alpha=0.15, color=strava_orange)
     ax.axhline(
         avg_pace / 60,
-        color="tomato",
+        color="#D44200",
         linestyle="--",
         linewidth=2,
         label=f"Avg {format_pace(avg_pace)}",
