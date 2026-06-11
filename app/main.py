@@ -15,21 +15,21 @@ from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
+from app.config import (
+    FRONTEND_DIR,
+    GENERATED_ROUTES_DIR,
+    LIBRARY_DIR,
+    MODELS_DIR,
+    OUTPUT_DIR,
+    PROFILE_PATH,
+    PROJECT_ROOT,
+    RUNS_DATA_PATH,
+    UPLOAD_DIR,
+)
 from app.services.analysis import analyze_run
-from app.services.run_library import add_runs, get_library_dir, list_runs, reset_all_data
+from app.services.run_library import add_runs, list_runs, reset_all_data
 from app.services.run_profile import learn_from_runs, load_profile
 from app.services.route_recommender import recommend_route
-
-PROJECT_ROOT = Path(__file__).resolve().parent.parent
-FRONTEND_DIR = PROJECT_ROOT / "frontend"
-OUTPUT_DIR = PROJECT_ROOT / "output"
-UPLOAD_DIR = PROJECT_ROOT / "data" / "uploads"
-LIBRARY_DIR = get_library_dir(PROJECT_ROOT)
-MODELS_DIR = PROJECT_ROOT / "models"
-PROFILE_PATH = PROJECT_ROOT / "data" / "runner_profile.json"
-
-OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
-UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
 
 app = FastAPI(
     title="PaceMap AI",
@@ -227,19 +227,16 @@ async def recommend(request: RecommendRequest):
         )
 
     historical_runs = []
-    runs_data_path = PROFILE_PATH.parent / "runs_data.json"
-    if runs_data_path.exists():
-        with open(runs_data_path, encoding="utf-8") as f:
+    if RUNS_DATA_PATH.exists():
+        with open(RUNS_DATA_PATH, encoding="utf-8") as f:
             historical_runs = json.load(f)
-
-    gpx_dir = PROJECT_ROOT / "data" / "generated_routes"
 
     try:
         return recommend_route(
             profile=profile,
             models_dir=MODELS_DIR,
             output_dir=OUTPUT_DIR,
-            gpx_dir=gpx_dir,
+            gpx_dir=GENERATED_ROUTES_DIR,
             target_lat=request.latitude,
             target_lon=request.longitude,
             target_distance_km=request.distance_km,

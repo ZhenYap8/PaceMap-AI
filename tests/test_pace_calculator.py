@@ -11,15 +11,12 @@ Tests for pace_calculator module covering:
 - Edge cases and error handling
 """
 
-import pytest
-import sys
-import os
-from datetime import datetime, timedelta
 import math
+from datetime import datetime, timedelta
 
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'src'))
+import pytest
 
-from pace_calculator import (
+from pacemap.pace_calculator import (
     haversine_distance,
     calculate_segment_distances,
     calculate_cumulative_distance,

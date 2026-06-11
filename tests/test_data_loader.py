@@ -8,16 +8,13 @@ Tests for data_loader module covering:
 - Edge cases (empty files, missing data)
 """
 
-import pytest
-import sys
-import os
 import tempfile
 from datetime import datetime, timedelta
+
 import pandas as pd
+import pytest
 
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'src'))
-
-from data_loader import extract_run_features, load_all_runs
+from pacemap.data_loader import extract_run_features, load_all_runs
 
 
 # Sample GPX content for testing

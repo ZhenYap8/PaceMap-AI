@@ -179,7 +179,7 @@ def remove_outliers_three_sigma(
 
 def _format_metric(col: str, value: float) -> str:
     """Format a run metric for human-readable outlier messages."""
-    from utils import format_duration, format_pace  # noqa: WPS433
+    from pacemap.utils import format_duration, format_pace
 
     if col in ("avg_pace_s_per_km", "implied_pace_s_per_km"):
         return format_pace(value)
@@ -219,7 +219,7 @@ def _outlier_entry(
     id_column: Optional[str],
 ) -> dict:
     """Build a human-readable outlier report entry."""
-    from utils import format_duration, format_pace  # noqa: WPS433
+    from pacemap.utils import format_duration, format_pace
 
     entry: dict = {"reasons": reasons}
     if id_column and id_column in df.columns:
@@ -247,7 +247,7 @@ def filter_invalid_pace_time_runs(
     invalid_indices: list[int] = []
     invalid_entries: list[dict] = []
 
-    from utils import format_duration, format_pace  # noqa: WPS433
+    from pacemap.utils import format_duration, format_pace
 
     for idx, row in df.iterrows():
         reasons: list[str] = []

@@ -2,16 +2,10 @@
 Build GPX files from generated route coordinates.
 """
 
-import sys
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
-PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
-SRC_DIR = PROJECT_ROOT / "src"
-if str(SRC_DIR) not in sys.path:
-    sys.path.insert(0, str(SRC_DIR))
-
-from pace_calculator import calculate_segment_distances  # noqa: E402
+from pacemap.pace_calculator import calculate_segment_distances
 
 
 def write_route_gpx_with_distance(

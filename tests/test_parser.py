@@ -8,15 +8,12 @@ Tests for GPX parsing module covering:
 - Edge cases
 """
 
-import pytest
-import sys
 import os
 from datetime import datetime
 
-# Add src to path
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'src'))
+import pytest
 
-from parser import (
+from pacemap.parser import (
     load_gpx_file,
     extract_track_points,
     extract_coordinates,
@@ -144,7 +141,7 @@ class TestExtractTimestamps:
     def test_handle_missing_timestamps(self):
         """Should handle points with missing time data"""
         # Test with our internal TrackPoint dataclass
-        from parser import TrackPoint
+        from pacemap.parser import TrackPoint
         
         point_no_time = TrackPoint(latitude=51.5, longitude=-0.1, elevation=10.0, timestamp=None)
         timestamps = extract_timestamps([point_no_time])

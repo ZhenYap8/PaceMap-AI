@@ -8,34 +8,54 @@ Analyzes a single GPX run and provides:
 - Elevation profile
 
 Usage:
-    python analyze_single_run.py data/raw_gpx/run_1.gpx
+    python scripts/analyze_single_run.py data/raw_gpx/run_1.gpx
 """
 
-import sys
-import os
 import argparse
+import os
+from pathlib import Path
+
 import matplotlib.pyplot as plt
 import matplotlib.ticker as ticker
 
-# Add src to path
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'src'))
+from pacemap.map_visualizer import build_activity_map, export_map_html
+from pacemap.parser import (
+    extract_coordinates,
+    extract_elevations,
+    extract_timestamps,
+    extract_track_points,
+    load_gpx_file,
+)
+from pacemap.pace_calculator import (
+    calculate_cumulative_distance,
+    calculate_segment_distances,
+    calculate_segment_paces,
+    smooth_gps_coordinates,
+)
+from pacemap.utils import (
+    deduplicate_timestamps,
+    elapsed_seconds,
+    elevation_gain,
+    format_distance,
+    format_duration,
+    format_pace,
+    metres_to_km,
+)
 
-from parser import load_gpx_file, extract_track_points, extract_coordinates, extract_timestamps, extract_elevations
-from pace_calculator import smooth_gps_coordinates, calculate_segment_distances, calculate_cumulative_distance, calculate_segment_paces
-from utils import format_pace, format_distance, format_duration, elevation_gain, elapsed_seconds, metres_to_km, deduplicate_timestamps
-from map_visualizer import build_activity_map, export_map_html
+PROJECT_ROOT = Path(__file__).resolve().parent.parent
+DEFAULT_OUTPUT_DIR = PROJECT_ROOT / "output"
 
 
-def analyze_run(gpx_filepath: str, output_dir: str = "output", smoothing_window: int = 3):
+def analyze_run(gpx_filepath: str, output_dir: str | None = None, smoothing_window: int = 3):
     """
-    Analyze a single GPX run and generate visualizations.
+    Analyse a single GPX run and generate visualisations.
     
     Args:
         gpx_filepath: Path to the GPX file
         output_dir: Directory to save output files
         smoothing_window: Window size for GPS smoothing
     """
-    # Create output directory
+    output_dir = output_dir or str(DEFAULT_OUTPUT_DIR)
     os.makedirs(output_dir, exist_ok=True)
     
     run_name = os.path.splitext(os.path.basename(gpx_filepath))[0]
@@ -156,9 +176,9 @@ def main():
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
-  python analyze_single_run.py data/raw_gpx/run_1.gpx
-  python analyze_single_run.py data/raw_gpx/run_5.gpx --output results
-  python analyze_single_run.py data/raw_gpx/run_10.gpx --smoothing 5
+  python scripts/analyze_single_run.py data/raw_gpx/run_1.gpx
+  python scripts/analyze_single_run.py data/raw_gpx/run_5.gpx --output results
+  python scripts/analyze_single_run.py data/raw_gpx/run_10.gpx --smoothing 5
         """
     )
     

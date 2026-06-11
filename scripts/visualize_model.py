@@ -12,19 +12,25 @@ Usage:
     python visualize_model.py --model models/best_model_gradient_boosting_20260517_173948.pkl
 """
 
-import sys
+import argparse
 import os
 import pickle
-import argparse
+from pathlib import Path
+
 import matplotlib.pyplot as plt
 import numpy as np
-
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'src'))
-
-from sklearn.model_selection import train_test_split, learning_curve
 from sklearn.metrics import mean_squared_error
-from data_loader import load_all_runs
-from ml_model import preprocess_features, engineer_features, FEATURE_COLUMNS, TARGET_COLUMN
+from sklearn.model_selection import learning_curve, train_test_split
+
+from pacemap.data_loader import load_all_runs
+from pacemap.ml_model import (
+    FEATURE_COLUMNS,
+    TARGET_COLUMN,
+    engineer_features,
+    preprocess_features,
+)
+
+PROJECT_ROOT = Path(__file__).resolve().parent.parent
 
 
 def plot_gradient_boosting_loss(model, X_train, y_train, X_val, y_val, output_dir):

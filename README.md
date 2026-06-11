@@ -66,14 +66,23 @@ PaceMap AI analyses your running data from GPX files to visualise pace variation
 3. **Install dependencies**
    ```bash
    pip install -r requirements.txt
+   pip install -e .
    ```
 
 ### Usage
 
-#### 1️⃣ **Analyse a Single Run**
+#### 🌐 **Web App** (recommended)
 
 ```bash
-python analyze_single_run.py data/raw_gpx/run_1.gpx
+python run_server.py
+```
+
+Open http://localhost:8000 for the full UI — analyse runs, build your run library, and generate route recommendations.
+
+#### 1️⃣ **Analyse a Single Run** (CLI)
+
+```bash
+python scripts/analyze_single_run.py data/raw_gpx/run_1.gpx
 ```
 
 This will generate:
@@ -99,7 +108,7 @@ This will generate:
 #### 2️⃣ **Train ML Model**
 
 ```bash
-python train_ml_model.py
+python scripts/train_ml_model.py
 ```
 
 This will:
@@ -125,7 +134,7 @@ Model: Gradient Boosting
 #### 3️⃣ **Visualise Model Performance**
 
 ```bash
-python visualize_model.py
+python scripts/visualize_model.py
 ```
 
 Generates diagnostic visualisations:
@@ -140,43 +149,44 @@ Generates diagnostic visualisations:
 
 ```
 PaceMap-AI/
-├── analyze_single_run.py      # Single run analysis script
-├── train_ml_model.py           # ML model training
-├── visualize_model.py          # Model diagnostics
+├── run_server.py               # Start web app (localhost:8000)
+├── pyproject.toml              # Package config + pytest settings
 ├── requirements.txt            # Python dependencies
 ├── pytest.ini                  # Test configuration
-├── TEST_STRATEGY.md            # Testing documentation (195 tests)
+├── TEST_STRATEGY.md            # Testing documentation
 │
-├── data/
-│   ├── raw_gpx/               # Place your GPX files here
-│   │   ├── run_1.gpx
-│   │   ├── run_2.gpx
-│   │   └── ...
-│   └── processed/             # Auto-generated CSV files
+├── app/                        # FastAPI backend
+│   ├── main.py                 # API routes + static file serving
+│   ├── config.py               # Central path configuration
+│   └── services/               # Analysis, profiles, route generation
 │
-├── src/                       # Core library modules
-│   ├── parser.py              # GPX file parsing
-│   ├── pace_calculator.py     # Distance/pace calculations
-│   ├── map_visualizer.py      # Interactive map generation
-│   ├── ml_model.py            # Machine learning models
-│   ├── data_loader.py         # Batch data loading
-│   └── utils.py               # Utility functions
+├── frontend/                   # Web UI (HTML, CSS, JS)
+│   ├── index.html
+│   ├── css/style.css
+│   └── js/app.js
 │
-├── tests/                     # Comprehensive test suite (195 tests)
-│   ├── test_parser.py         # 16 tests
-│   ├── test_ml_model.py       # 27 tests
-│   ├── test_utils.py          # 50 tests
-│   ├── test_pace_calculator.py # 47 tests
-│   ├── test_map_visualizer.py # 33 tests
-│   └── test_data_loader.py    # 23 tests
+├── scripts/                    # CLI tools
+│   ├── analyze_single_run.py
+│   ├── train_ml_model.py
+│   └── visualize_model.py
 │
-├── models/                    # Trained ML models
-│   ├── best_model_*.pkl
-│   └── *.png                  # Visualisation outputs
+├── src/pacemap/                # Core Python library
+│   ├── parser.py
+│   ├── pace_calculator.py
+│   ├── map_visualizer.py
+│   ├── ml_model.py
+│   ├── data_loader.py
+│   └── utils.py
 │
-└── output/                    # Generated maps and charts
-    ├── *_pace_map.html
-    └── *_pace_chart.png
+├── tests/                      # Test suite
+│
+├── data/                       # Runtime data (gitignored)
+│   ├── raw_gpx/               # Sample/training GPX files
+│   ├── library/               # Uploaded run library
+│   └── uploads/               # Temporary API uploads
+│
+├── models/                    # Trained ML models (gitignored)
+└── output/                    # Generated maps and charts (gitignored)
 ```
 
 ---
@@ -210,7 +220,7 @@ pytest tests/test_data_loader.py -v         # Data loading (23 tests)
 ### Generate Coverage Report
 
 ```bash
-pytest tests/ --cov=src --cov-report=html
+pytest tests/ --cov=pacemap --cov-report=html
 open htmlcov/index.html
 ```
 
@@ -274,13 +284,13 @@ Shows how the model improves during training:
 
 ```bash
 # Train specific model type
-python train_ml_model.py --model-type gradient_boosting
+python scripts/train_ml_model.py --model-type gradient_boosting
 
 # Use custom data directory
-python train_ml_model.py --gpx-dir /path/to/gpx/files
+python scripts/train_ml_model.py --gpx-dir /path/to/gpx/files
 
 # Adjust train/test split
-python train_ml_model.py --test-size 0.3
+python scripts/train_ml_model.py --test-size 0.3
 ```
 
 ### Batch Analysis
@@ -288,7 +298,7 @@ python train_ml_model.py --test-size 0.3
 Process multiple runs and export to CSV:
 
 ```python
-from src.data_loader import load_all_runs
+from pacemap.data_loader import load_all_runs
 
 # Load all runs from directory
 df = load_all_runs('data/raw_gpx/')
@@ -302,9 +312,9 @@ print(f"Processed {len(df)} runs")
 ### Custom Pace Map
 
 ```python
-from src.parser import load_gpx_file, extract_track_points, extract_coordinates
-from src.pace_calculator import calculate_segment_paces, smooth_gps_coordinates
-from src.map_visualizer import build_activity_map, export_map_html
+from pacemap.parser import load_gpx_file, extract_track_points, extract_coordinates
+from pacemap.pace_calculator import calculate_segment_paces, smooth_gps_coordinates
+from pacemap.map_visualizer import build_activity_map, export_map_html
 
 # Parse GPX
 gpx = load_gpx_file('my_run.gpx')
@@ -456,7 +466,7 @@ python -c "import gpxpy; gpx = gpxpy.parse(open('your_file.gpx'))"
 **Issue: Model predictions seem inaccurate**
 ```bash
 # Solution: Retrain with more data or try different model
-python train_ml_model.py --model-type gradient_boosting
+python scripts/train_ml_model.py --model-type gradient_boosting
 ```
 
 ---

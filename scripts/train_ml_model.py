@@ -15,23 +15,29 @@ Usage:
     python train_ml_model.py --gpx-dir data/raw_gpx --output models
 """
 
-import sys
-import os
 import argparse
+import os
 import pickle
 from datetime import datetime
-
-# Add src to path
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'src'))
+from pathlib import Path
 
 from sklearn.model_selection import train_test_split
-from data_loader import load_all_runs
-from ml_model import (
-    evaluate_model, predict, TARGET_COLUMN, SUPPORTED_MODELS,
-    preprocess_features, engineer_features, FEATURE_COLUMNS, build_model,
+
+from pacemap.data_loader import load_all_runs
+from pacemap.ml_model import (
+    FEATURE_COLUMNS,
+    SUPPORTED_MODELS,
+    TARGET_COLUMN,
+    build_model,
     clean_runs_for_learning,
+    engineer_features,
+    evaluate_model,
+    predict,
+    preprocess_features,
 )
-from utils import format_duration
+from pacemap.utils import format_duration
+
+PROJECT_ROOT = Path(__file__).resolve().parent.parent
 
 
 def train_models(gpx_dir: str, output_dir: str = "models", smoothing_window: int = 3):

@@ -9,15 +9,11 @@ Tests for ML model module covering:
 - Error handling
 """
 
-import pytest
-import sys
-import os
 import numpy as np
 import pandas as pd
+import pytest
 
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'src'))
-
-from ml_model import (
+from pacemap.ml_model import (
     preprocess_features,
     engineer_features,
     build_model,

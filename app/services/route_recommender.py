@@ -3,24 +3,18 @@ ML-based route recommender — generates NEW routes near a location.
 """
 
 import math
-import sys
 import uuid
 from pathlib import Path
 from typing import Any, Optional
 
-PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
-SRC_DIR = PROJECT_ROOT / "src"
-if str(SRC_DIR) not in sys.path:
-    sys.path.insert(0, str(SRC_DIR))
+from pacemap.pace_calculator import haversine_distance
+from pacemap.utils import format_distance, format_duration, format_pace
 
-from pace_calculator import haversine_distance  # noqa: E402
-from utils import format_distance, format_duration, format_pace  # noqa: E402
-
-from app.services.analysis import analyze_run  # noqa: E402
-from app.services.elevation_service import calculate_route_elevation  # noqa: E402
-from app.services.gpx_builder import write_route_gpx_with_distance  # noqa: E402
-from app.services.route_generator import generate_route_candidates  # noqa: E402
-from app.services.run_profile import load_model, predict_finish_time  # noqa: E402
+from app.services.analysis import analyze_run
+from app.services.elevation_service import calculate_route_elevation
+from app.services.gpx_builder import write_route_gpx_with_distance
+from app.services.route_generator import generate_route_candidates
+from app.services.run_profile import load_model, predict_finish_time
 
 
 WEIGHTS = {

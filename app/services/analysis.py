@@ -1,34 +1,28 @@
 """
-Analysis service — wraps existing src/ modules for the web API.
+Analysis service — wraps pacemap library modules for the web API.
 """
 
 import os
-import sys
 from typing import Any
 
 import matplotlib.pyplot as plt
 import matplotlib.ticker as ticker
 
-# Ensure src/ is importable (same pattern as CLI scripts)
-PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-SRC_DIR = os.path.join(PROJECT_ROOT, "src")
-if SRC_DIR not in sys.path:
-    sys.path.insert(0, SRC_DIR)
-
-from parser import (  # noqa: E402
+from pacemap.map_visualizer import build_activity_map, export_map_html
+from pacemap.parser import (
     extract_coordinates,
     extract_elevations,
     extract_timestamps,
     extract_track_points,
     load_gpx_file,
 )
-from pace_calculator import (  # noqa: E402
+from pacemap.pace_calculator import (
     calculate_cumulative_distance,
     calculate_segment_distances,
     calculate_segment_paces,
     smooth_gps_coordinates,
 )
-from utils import (  # noqa: E402
+from pacemap.utils import (
     deduplicate_timestamps,
     elevation_gain,
     elapsed_seconds,
@@ -36,12 +30,13 @@ from utils import (  # noqa: E402
     format_duration,
     format_pace,
 )
-from map_visualizer import build_activity_map, export_map_html  # noqa: E402
+
+from app.config import OUTPUT_DIR
 
 
 def analyze_run(
     gpx_filepath: str,
-    output_dir: str = "output",
+    output_dir: str | None = None,
     smoothing_window: int = 3,
     user_location: tuple[float, float] | None = None,
     map_filename_suffix: str = "",
@@ -52,6 +47,7 @@ def analyze_run(
 
     Returns structured stats plus URLs to generated assets.
     """
+    output_dir = output_dir or str(OUTPUT_DIR)
     os.makedirs(output_dir, exist_ok=True)
 
     run_name = os.path.splitext(os.path.basename(gpx_filepath))[0]

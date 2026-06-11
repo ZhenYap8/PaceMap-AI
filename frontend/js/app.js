@@ -23,6 +23,29 @@ function formatDurationFromSeconds(sec) {
   return `${h}:${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
 }
 
+/** Extract run number from IDs like run_2 → 2. */
+function parseRunNumber(runId) {
+  const match = String(runId).match(/^run_(\d+)$/i);
+  return match ? parseInt(match[1], 10) : null;
+}
+
+function sortRunsForDisplay(runs) {
+  return [...runs].sort((a, b) => {
+    const na = parseRunNumber(a.run_id);
+    const nb = parseRunNumber(b.run_id);
+    if (na !== null && nb !== null) return na - nb;
+    if (na !== null) return -1;
+    if (nb !== null) return 1;
+    return String(a.run_id).localeCompare(String(b.run_id));
+  });
+}
+
+function formatRunName(run, index) {
+  const num = parseRunNumber(run.run_id) ?? index + 1;
+  const filename = run.filename || `${run.run_id}.gpx`;
+  return { label: `Run ${num}`, filename };
+}
+
 /** Fix legacy reason strings that still contain raw seconds. */
 function humanizeCleaningReason(reason, run) {
   let text = reason;
@@ -320,18 +343,24 @@ function renderProfile(profile) {
     ${cleaningHtml}
     <h3>Runs Used for Learning</h3>
     <div class="runs-table">
-      ${profile.runs
+      ${sortRunsForDisplay(profile.runs)
         .map(
-          (r) => `
+          (r, i) => {
+            const { label, filename } = formatRunName(r, i);
+            return `
         <div class="run-row">
-          <span class="run-name">${r.run_id}</span>
+          <span class="run-name">
+            <span class="run-label">${label}</span>
+            <span class="run-file">${filename}</span>
+          </span>
           <span>${r.distance_km} km</span>
           <span>${r.avg_pace}</span>
           <span>${r.elevation_gain_m} m elev</span>
           ${r.has_heart_rate ? '<span class="tag">HR</span>' : ""}
           ${r.has_cadence ? '<span class="tag">Cadence</span>' : ""}
         </div>
-      `
+      `;
+          }
         )
         .join("")}
     </div>

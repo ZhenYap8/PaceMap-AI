@@ -11,15 +11,12 @@ Tests for map_visualizer module covering:
 - Edge cases and error handling
 """
 
-import pytest
-import sys
-import os
-import folium
 from typing import List
 
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'src'))
+import folium
+import pytest
 
-from map_visualizer import (
+from pacemap.map_visualizer import (
     pace_to_colour,
     create_base_map,
     render_pace_route,

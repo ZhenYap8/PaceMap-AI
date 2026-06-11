@@ -135,7 +135,7 @@ pytest tests/test_ml_model.py::TestPredict::test_predict_single_run -v
 
 ### Run with Coverage Report
 ```bash
-pytest tests/ --cov=src --cov-report=html
+pytest tests/ --cov=pacemap --cov-report=html
 ```
 
 ### Run in Quiet Mode
@@ -295,7 +295,7 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
       - name: Run tests
-        run: pytest tests/ -v --cov=src
+        run: pytest tests/ -v --cov=pacemap
 ```
 
 ---

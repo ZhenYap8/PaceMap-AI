@@ -9,9 +9,25 @@ import os
 from typing import Dict, Optional
 import pandas as pd
 
-from parser import load_gpx_file, extract_track_points, extract_coordinates, extract_timestamps, extract_elevations
-from pace_calculator import smooth_gps_coordinates, calculate_segment_distances, calculate_cumulative_distance, calculate_segment_paces
-from utils import elevation_gain, elapsed_seconds, metres_to_km, deduplicate_timestamps
+from pacemap.parser import (
+    extract_coordinates,
+    extract_elevations,
+    extract_timestamps,
+    extract_track_points,
+    load_gpx_file,
+)
+from pacemap.pace_calculator import (
+    calculate_cumulative_distance,
+    calculate_segment_distances,
+    calculate_segment_paces,
+    smooth_gps_coordinates,
+)
+from pacemap.utils import (
+    deduplicate_timestamps,
+    elapsed_seconds,
+    elevation_gain,
+    metres_to_km,
+)
 
 logger = logging.getLogger(__name__)
 

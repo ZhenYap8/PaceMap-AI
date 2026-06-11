@@ -6,19 +6,25 @@ import json
 import os
 import pickle
 import re
-import sys
 from pathlib import Path
 from typing import Any, Optional
 
 import numpy as np
 import pandas as pd
+from sklearn.model_selection import train_test_split
 
-PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
-SRC_DIR = PROJECT_ROOT / "src"
-if str(SRC_DIR) not in sys.path:
-    sys.path.insert(0, str(SRC_DIR))
-
-from parser import (  # noqa: E402
+from pacemap.ml_model import (
+    FEATURE_COLUMNS,
+    MODEL_GRADIENT_BOOSTING,
+    TARGET_COLUMN,
+    build_model,
+    clean_runs_for_learning,
+    engineer_features,
+    evaluate_model,
+    preprocess_features,
+    predict,
+)
+from pacemap.parser import (
     extract_cadences,
     extract_coordinates,
     extract_elevations,
@@ -27,14 +33,14 @@ from parser import (  # noqa: E402
     extract_track_points,
     load_gpx_file,
 )
-from pace_calculator import (  # noqa: E402
+from pacemap.pace_calculator import (
     calculate_cumulative_distance,
     calculate_segment_distances,
     calculate_segment_paces,
     haversine_distance,
     smooth_gps_coordinates,
 )
-from utils import (  # noqa: E402
+from pacemap.utils import (
     deduplicate_timestamps,
     elevation_gain,
     elapsed_seconds,
@@ -42,18 +48,6 @@ from utils import (  # noqa: E402
     format_pace,
     metres_to_km,
 )
-from ml_model import (  # noqa: E402
-    FEATURE_COLUMNS,
-    MODEL_GRADIENT_BOOSTING,
-    TARGET_COLUMN,
-    build_model,
-    engineer_features,
-    evaluate_model,
-    preprocess_features,
-    predict,
-    clean_runs_for_learning,
-)
-from sklearn.model_selection import train_test_split  # noqa: E402
 
 
 def _mean_valid(values: list[Optional[float]]) -> Optional[float]:
@@ -216,9 +210,16 @@ def learn_from_runs(
     elif model_path.exists():
         model_path.unlink()
 
+    filename_by_run_id = {
+        entry.get("run_id"): entry.get("filename")
+        for entry in run_entries
+        if entry.get("run_id")
+    }
+
     profile["runs"] = [
         {
             "run_id": r["run_id"],
+            "filename": filename_by_run_id.get(r["run_id"], f"{r['run_id']}.gpx"),
             "distance_km": round(r["distance_km"], 2),
             "elevation_gain_m": round(r["elevation_gain_m"], 1),
             "avg_pace": format_pace(r["avg_pace_s_per_km"]),
@@ -258,7 +259,7 @@ def _parse_duration_string(duration: str) -> Optional[float]:
 
 def _normalize_cleaning_reason(reason: str, entry: dict) -> str:
     """Upgrade legacy cleaning reason strings that used raw seconds."""
-    from utils import format_duration, format_pace  # noqa: E402
+    from pacemap.utils import format_duration, format_pace
 
     reason = re.sub(
         r"\((\d+(?:\.\d+)?)s/km\)",
